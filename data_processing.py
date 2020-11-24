@@ -8,7 +8,7 @@ import requests
 import re
 
 
-def prepare_data():
+def prepare_data(input_file):
     """
     This method will create an unfiltered data matrix consisting of the unique artists and their songs
     from the billboard data.
@@ -101,7 +101,7 @@ def get_song_id(access_token, song_name, artist):
     return spotify_id
 
 
-def get_features_for_track(track_id):
+def get_features_for_track(track_id, row):
     """
     This method will get the features given a track id
     :param track_id: Spotify unique id for a track
@@ -119,11 +119,26 @@ def get_features_for_track(track_id):
     r = requests.get(BASE_URL, headers=headers)
     r = r.json()
 
+    row["danceability"] = r["danceability"]
+    row["energy"] = r["energy"]
+    row["key"] = r["key"]
+    row["loudness"] = r["loudness"]
+    row["mode"] = r["mode"]
+    row["speechiness"] = r["speechiness"]
+    row["acousticness"] = r["acousticness"]
+    row["instrumentalness"] = r["instrumentalness"]
+    row["liveness"] = r["liveness"]
+    row["valence"] = r["valence"]
+    row["tempo"] = r["tempo"]
+    row["duration_ms"] = r["duration_ms"]
+    row["time_signature"] = r["time_signature"]
+    row["id"] = r["id"]
+
     return r
 
 
 access_token = get_access_token("6dc8ee95f75043c8b9f7869848ca8a95", "3036419608854dbb996e9388123b9b88")
-unfilitered_data = prepare_data()
+unfilitered_data = prepare_data(input_file)
 
 ids = []
 final_data = []
@@ -135,14 +150,14 @@ for row in unfilitered_data:
         continue
     row["id"] = song_id
     try:
-        row["features"] = get_features_for_track(song_id)
+        get_features_for_track(song_id, row)
     except:
         continue
 
     final_data.append(row)
 
 # Construct the new csv file
-with open('Data/data.csv', 'w', newline='') as output_file:
+with open('data.csv', 'w', newline='') as output_file:
     dict_writer = csv.DictWriter(output_file, final_data[0].keys())
     dict_writer.writeheader()
     dict_writer.writerows(final_data)
